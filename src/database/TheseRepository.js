@@ -25,4 +25,21 @@ export default class TheseRepository {
       .find()
       .exec();
   }
+
+  getByParams({ limit, page, sortBy, sortType }) {
+    return this.getModel()
+      .find({})
+      .sort({
+        [sortBy]: sortType,
+      })
+      .skip(+page * +limit)
+      .limit(+limit)
+      .exec();
+  }
+
+  getCountBySurnameNameAndDefenseDate(surname, name, defenseDate) {
+    return this.getModel()
+      .countDocuments({ surname, name, defenseDate })
+      .exec();
+  }
 }

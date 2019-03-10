@@ -1,6 +1,7 @@
 import nconf from 'nconf';
 import Server from './server/Server';
 import Mongo from './database/Mongo';
+import TheseRepository from './database/TheseRepository';
 
 export default class App {
   constructor() {
@@ -8,7 +9,8 @@ export default class App {
     this.mongo = new Mongo(databaseUrl);
 
     const port = nconf.get('api:port') || 3001;
-    this.server = new Server(port);
+    const theseRepository = new TheseRepository();
+    this.server = new Server(port, theseRepository);
   }
 
   async run() {
