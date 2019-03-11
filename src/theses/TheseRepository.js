@@ -32,14 +32,26 @@ export default class TheseRepository {
       .sort({
         [sortBy]: sortType,
       })
-      .skip(+page * +limit)
-      .limit(+limit)
+      .skip(page * limit)
+      .limit(limit)
       .exec();
   }
 
   getCountBySurnameNameAndDefenseDate(surname, name, defenseDate) {
     return this.getModel()
       .countDocuments({ surname, name, defenseDate })
+      .exec();
+  }
+
+  updateById(id, updatedThese) {
+    return this.getModel()
+      .findByIdAndUpdate(id, updatedThese, { new: true })
+      .exec();
+  }
+
+  removeById(id) {
+    return this.getModel()
+      .findByIdAndRemove(id)
       .exec();
   }
 }
