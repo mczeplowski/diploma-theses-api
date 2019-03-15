@@ -1,14 +1,49 @@
+import nconf from 'nconf';
+import jwt from 'jsonwebtoken';
+
 export default class TheseRoutes {
   constructor(theseRepository) {
     this.theseRepository = theseRepository;
+    this.jwtSecret = nconf.get('jwt:secret');
+    this.admins = nconf.get('admins').split(',');
   }
 
   install(server) {
     server.get('/theses', this.getAll.bind(this));
-    server.post('/theses', this.create.bind(this));
+    server.post('/theses', this.authorize.bind(this), this.create.bind(this));
     server.get('/theses/:theseId', this.getOne.bind(this));
-    server.put('/theses/:theseId', this.update.bind(this));
-    server.delete('/theses/:theseId', this.remove.bind(this));
+    server.put('/theses/:theseId', this.authorize.bind(this), this.update.bind(this));
+    server.delete('/theses/:theseId', this.authorize.bind(this), this.remove.bind(this));
+  }
+
+  authorize(req, res, next) {
+    const { authorization } = req.headers;
+    const authorizationParts = authorization.split(' ');
+    const token = authorizationParts[0] === 'Bearer' ? authorizationParts[1] : null;
+
+    if (!token) {
+      return res
+        .status(401)
+        .json({ message: '401 Unauthorized'});
+    }
+
+    let decodedToken = null;
+
+    try {
+      decodedToken = jwt.verify(token, this.jwtSecret)
+    } catch (e) {
+      return res
+        .status(401)
+        .json({ message: '401 Unauthorized'});
+    }
+
+    if (!this.admins.includes(decodedToken.googleId)) {
+      return res
+        .status(401)
+        .json({ message: '401 Unauthorized'});
+    }
+
+    return next();
   }
 
   async getAll (req, res) {
@@ -32,7 +67,7 @@ export default class TheseRoutes {
     } catch (e) {
       return res
         .status(500)
-        .send(`Internal Server Error (${e.message})`);
+        .json({ message: `Internal Server Error (${e.message})` });
     }
 
     const response = {
@@ -43,11 +78,10 @@ export default class TheseRoutes {
 
     return res
       .status(200)
-      .send(response);
+      .json(response);
   }
 
   async create (req, res) {
-    // add 403 -> notAdmin
     const { surname, name, topic, promoter, reviewer, studies, field, specialty, defenseDate: date } = req.body;
     const defenseDate = typeof date === 'string' ? new Date(date) : date;
 
@@ -57,13 +91,13 @@ export default class TheseRoutes {
     } catch (e) {
       return res
         .status(500)
-        .send(`Internal Server Error (${e.message})`);
+        .json({ message: `Internal Server Error (${e.message})` });
     }
 
     if (!!thesesCount) {
       return res
         .status(409)
-        .send('These already exist');
+        .json({ message: 'These already exist' });
     }
 
     let these = null;
@@ -83,12 +117,12 @@ export default class TheseRoutes {
     } catch (e) {
       return res
         .status(500)
-        .send(`Internal Server Error (${e.message})`);
+        .json({ message: `Internal Server Error (${e.message})` });
     }
 
     return res
       .status(200)
-      .send({ these });
+      .json({ these });
   }
 
   async getOne(req, res) {
@@ -101,22 +135,21 @@ export default class TheseRoutes {
     } catch (e) {
       return res
         .status(500)
-        .send(`Internal Server Error (${e.message})`);
+        .json({ message: `Internal Server Error (${e.message})` });
     }
 
     if (!these) {
       return res
         .status(404)
-        .send('These does not exits');
+        .json({ message: 'These does not exits' });
     }
 
     return res
       .status(200)
-      .send({ these });
+      .json({ these });
   }
 
   async update(req, res) {
-    // add 403 -> notAdmin
     const { theseId } = req.params;
     const { these } = req.body;
 
@@ -127,17 +160,16 @@ export default class TheseRoutes {
     } catch (e) {
       return res
         .status(500)
-        .send(`Internal Server Error (${e.message})`);
+        .json({ message: `Internal Server Error (${e.message})` });
     }
 
     return res
       .status(200)
-      .send({ these: updatedThese });
+      .json({ these: updatedThese });
 
   }
 
   async remove(req, res) {
-    // add 403 -> notAdmin
     const { theseId } = req.params;
 
     try {
@@ -145,11 +177,11 @@ export default class TheseRoutes {
     } catch (e) {
       return res
         .status(500)
-        .send(`Internal Server Error (${e.message})`);
+        .json({ message: `Internal Server Error (${e.message})` });
     }
 
     return res
       .status(200)
-      .send();
+      .json();
   }
 }
