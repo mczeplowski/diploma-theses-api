@@ -21,10 +21,10 @@ export default class TheseRoutes {
     const authorizationParts = authorization.split(' ');
     const token = authorizationParts[0] === 'Bearer' ? authorizationParts[1] : null;
 
+    const sendUnauthorizedRes = res => res.status(401).json({ message: '401 Unauthorized'});
+
     if (!token) {
-      return res
-        .status(401)
-        .json({ message: '401 Unauthorized'});
+      return sendUnauthorizedRes(res);
     }
 
     let decodedToken = null;
@@ -32,15 +32,11 @@ export default class TheseRoutes {
     try {
       decodedToken = jwt.verify(token, this.jwtSecret)
     } catch (e) {
-      return res
-        .status(401)
-        .json({ message: '401 Unauthorized'});
+      return sendUnauthorizedRes(res);
     }
 
     if (!this.admins.includes(decodedToken.googleId)) {
-      return res
-        .status(401)
-        .json({ message: '401 Unauthorized'});
+      return sendUnauthorizedRes(res);
     }
 
     return next();
