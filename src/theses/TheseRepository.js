@@ -54,4 +54,10 @@ export default class TheseRepository {
       .findByIdAndRemove(id)
       .exec();
   }
+
+  getCount() {
+    return this.getModel()
+      .count()
+      .exec();
+  }
 }

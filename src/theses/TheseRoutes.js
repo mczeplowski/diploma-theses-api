@@ -47,29 +47,36 @@ export default class TheseRoutes {
       limit = 10,
       page = 0,
       sortBy = 'defenseDate',
-      sortType = 1,
+      sortType = -1,
     } = req.query;
 
     const params = {
-      limit: +limit,
-      page: +page,
+      limit: Number(limit),
+      page: Number(page),
       sortBy,
       sortType,
     };
 
     let theses = [];
+    let count = 0;
     try {
       theses = await this.theseRepository.getByParams(params);
+      count = await this.theseRepository.getCount();
     } catch (e) {
       return res
         .status(500)
         .json({ message: `Internal Server Error (${e.message})` });
     }
 
+    const pages = Math.floor(count / limit);
     const response = {
       theses,
-      limit,
-      page,
+      pagination: {
+        count,
+        limit: Number(limit),
+        number: Number(page),
+        pages,
+      }
     };
 
     return res
