@@ -46,6 +46,8 @@ export default class TheseRoutes {
     const {
       limit = 10,
       page = 0,
+      searchBy,
+      searchPhrase,
       sortBy = 'defenseDate',
       sortType = -1,
     } = req.query;
@@ -53,6 +55,8 @@ export default class TheseRoutes {
     const params = {
       limit: Number(limit),
       page: Number(page),
+      searchBy,
+      searchPhrase,
       sortBy,
       sortType,
     };
@@ -61,7 +65,7 @@ export default class TheseRoutes {
     let count = 0;
     try {
       theses = await this.theseRepository.getByParams(params);
-      count = await this.theseRepository.getCount();
+      count = await this.theseRepository.getCount(params);
     } catch (e) {
       return res
         .status(500)

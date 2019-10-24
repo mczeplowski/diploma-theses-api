@@ -26,9 +26,9 @@ export default class TheseRepository {
       .exec();
   }
 
-  getByParams({ limit, page, sortBy, sortType }) {
+  getByParams({ limit, page, searchBy, searchPhrase, sortBy, sortType }) {
     return this.getModel()
-      .find({})
+      .find(searchBy ? { [searchBy]: searchPhrase } : {})
       .sort({
         [sortBy]: sortType,
       })
@@ -55,8 +55,9 @@ export default class TheseRepository {
       .exec();
   }
 
-  getCount() {
+  getCount({ searchBy, searchPhrase }) {
     return this.getModel()
+      .find(searchBy ? { [searchBy]: searchPhrase } : {})
       .count()
       .exec();
   }
