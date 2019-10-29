@@ -72,7 +72,7 @@ export default class TheseRoutes {
         .json({ message: `Internal Server Error (${e.message})` });
     }
 
-    const pages = Math.floor(count / limit);
+    const pages = Math.round(count / limit);
     const response = {
       theses,
       pagination: {
@@ -128,7 +128,7 @@ export default class TheseRoutes {
     }
 
     return res
-      .status(200)
+      .status(201)
       .json({ these });
   }
 
@@ -139,16 +139,12 @@ export default class TheseRoutes {
 
     try {
       these = await this.theseRepository.getById(theseId);
+
+      if (!these) throw new Error();
     } catch (e) {
       return res
-        .status(500)
-        .json({ message: `Internal Server Error (${e.message})` });
-    }
-
-    if (!these) {
-      return res
         .status(404)
-        .json({ message: 'These does not exits' });
+        .json({ message: `These (${theseId}) does not exits` });
     }
 
     return res
