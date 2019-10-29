@@ -28,7 +28,7 @@ export default class TheseRepository {
 
   getByParams({ limit, page, searchBy, searchPhrase, sortBy, sortType }) {
     return this.getModel()
-      .find(searchBy ? { [searchBy]: searchPhrase } : {})
+      .find(searchBy ? { [searchBy]: { $regex : new RegExp(searchPhrase, "i") } } : {})
       .sort({
         [sortBy]: sortType,
       })
@@ -58,7 +58,7 @@ export default class TheseRepository {
   getCount({ searchBy, searchPhrase }) {
     return this.getModel()
       .find(searchBy ? { [searchBy]: searchPhrase } : {})
-      .count()
+      .countDocuments()
       .exec();
   }
 }

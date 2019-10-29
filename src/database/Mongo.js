@@ -7,7 +7,8 @@ export default class Mongo {
 
   run() {
     console.log('Conecting with Mongo...');
-    return mongoose.connect(this.databaseUrl, { useNewUrlParser: true })
+    const options = { useNewUrlParser: true, useUnifiedTopology: true };
+    return mongoose.connect(this.databaseUrl, options)
       .then(() => {
         console.log('Successful connect with Mongo');
       })

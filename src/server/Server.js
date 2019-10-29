@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 
 export default class Server {
   constructor(port, routes) {
@@ -9,6 +10,7 @@ export default class Server {
 
   run() {
     this.server
+      .use(cors({ origin: 'http://localhost:8080' }))
       .use(express.json())
       .use(express.urlencoded({ extended: true }));
 
