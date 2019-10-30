@@ -1,5 +1,9 @@
 import These from './TheseModel';
 
+const getFindOptionsWithSearchRegexp = (searchBy, searchPhrase) => {
+  return searchBy ? { [searchBy]: { $regex : new RegExp(searchPhrase, "i") } } : {};
+}
+
 export default class TheseRepository {
   constructor() {
     this.model = These;
@@ -27,8 +31,9 @@ export default class TheseRepository {
   }
 
   getByParams({ limit, page, searchBy, searchPhrase, sortBy, sortType }) {
+    const findOptions = getFindOptionsWithSearchRegexp(searchBy, searchPhrase);
     return this.getModel()
-      .find(searchBy ? { [searchBy]: { $regex : new RegExp(searchPhrase, "i") } } : {})
+      .find(findOptions)
       .sort({
         [sortBy]: sortType,
       })
@@ -56,8 +61,9 @@ export default class TheseRepository {
   }
 
   getCount({ searchBy, searchPhrase }) {
+    const findOptions = getFindOptionsWithSearchRegexp(searchBy, searchPhrase);
     return this.getModel()
-      .find(searchBy ? { [searchBy]: searchPhrase } : {})
+      .find(findOptions)
       .countDocuments()
       .exec();
   }
